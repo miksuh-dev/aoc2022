@@ -11,14 +11,13 @@ where P: AsRef<Path>, {
 pub fn run() {
     let file = "src/one/input.txt";
 
-    let mut result = match read_lines(file) {
+    let mut persons = match read_lines(file) {
         Ok(lines) => {
             let mut persons = vec![];
             let mut current = vec![];
 
             for line in lines {
                 if let Ok(ip) = line {
-
                     if ip == "" {
                         let sum: i32 = current.iter().sum();
                         persons.push(sum);
@@ -31,13 +30,14 @@ pub fn run() {
             }
 
             persons
-
         },
         Err(error) => panic!("Problem opening the file: {:?}", error),
     };
 
 
-    // sort the vector
-    let asd = result.sort().unwrap()
+    persons.sort_by(|a, b| b.cmp(a));
 
+    let output = persons.iter().take(3).sum::<i32>();
+
+    println!("Top three summed: {}", output);
 }
