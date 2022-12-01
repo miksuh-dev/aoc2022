@@ -2,5 +2,5 @@
 mod task;
 
 fn main() {
-    task::run();
+    task::main();
 }

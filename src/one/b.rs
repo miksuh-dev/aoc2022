@@ -1,43 +1,24 @@
-use std::fs::File;
-use std::io::{self, BufRead};
-use std::path::Path;
+use std::fs;
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
-}
+pub fn main() {
+    let input = fs::read_to_string("src/one/input.txt").expect("File not found");
 
-pub fn run() {
-    let file = "src/one/input.txt";
+    let mut result = input.lines().fold(vec![0], |mut acc, line| -> Vec<i32> {
+        if line == "" {
+            acc.push(0);
 
-    let mut persons = match read_lines(file) {
-        Ok(lines) => {
-            let mut persons = vec![];
-            let mut current = vec![];
-
-            for line in lines {
-                if let Ok(ip) = line {
-                    if ip == "" {
-                        let sum: i32 = current.iter().sum();
-                        persons.push(sum);
-                        current = vec![];
-                    } else {
-                        current.push(ip.parse().unwrap());
-                    }
-                }
-            }
-
-            persons
+            return acc;
         }
-        Err(error) => panic!("Problem opening the file: {:?}", error),
-    };
 
-    persons.sort_by(|a, b| b.cmp(a));
+        let last = acc.last_mut().unwrap();
+        let current = line.parse().unwrap_or(0);
 
-    let output = persons.iter().take(3).sum::<i32>();
+        *last += current;
 
-    println!("Top three summed: {}", output);
+        acc
+    });
+
+    result.sort_by(|a, b| b.cmp(a));
+
+    println!("{}", result.iter().take(3).sum::<i32>());
 }
