@@ -18,18 +18,7 @@ pub fn main() {
     let result = input
         .lines()
         .map(|line| line.split_at(line.len() / 2))
-        .map(|(start, end)| {
-            start
-                .chars()
-                .filter(|c| end.contains(*c))
-                .map(|c| priority(c))
-                .collect::<Vec<usize>>()
-        })
-        .map(|mut matching| {
-            matching.dedup();
-            matching
-        })
-        .flatten()
+        .flat_map(|(start, end)| start.chars().find(|c| end.contains(*c)).map(priority))
         .sum::<usize>();
 
     println!("Result a: {}", result);

@@ -26,18 +26,12 @@ pub fn main() {
 
             (first, second, third)
         })
-        .map(|(first, second, third)| {
+        .flat_map(|(first, second, third)| {
             first
                 .iter()
-                .filter(|c| second.contains(*c) && third.contains(*c))
+                .find(|c| second.contains(*c) && third.contains(*c))
                 .map(|c| priority(*c))
-                .collect::<Vec<usize>>()
         })
-        .map(|mut matching| {
-            matching.dedup();
-            matching
-        })
-        .flatten()
         .sum::<usize>();
 
     println!("Result b: {}", result);
