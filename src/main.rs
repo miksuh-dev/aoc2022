@@ -1,7 +1,7 @@
-#[path = "two/a.rs"]
+#[path = "03/a.rs"]
 mod task_a;
 
-#[path = "two/b.rs"]
+#[path = "03/b.rs"]
 mod task_b;
 
 fn main() {
