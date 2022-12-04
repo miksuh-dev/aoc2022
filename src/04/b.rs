@@ -10,6 +10,10 @@ fn values_to_range(value: &str) -> Range<usize> {
     }
 }
 
+fn partially_contains(a: &Range<usize>, b: &Range<usize>) -> bool {
+    a.start <= b.start && a.end >= b.start || b.start <= a.start && b.end >= a.start
+}
+
 pub fn main() {
     let input = fs::read_to_string("src/04/input.txt").expect("File not found");
 
@@ -20,9 +24,7 @@ pub fn main() {
                 .map(|(a, b)| (values_to_range(a), values_to_range(b)))
                 .unwrap()
         })
-        .filter(|(a, b)| {
-            a.start <= b.start && a.end >= b.start || b.start <= a.start && b.end >= a.start
-        })
+        .filter(|(a, b)| partially_contains(a, b))
         .count();
 
     println!("Result b: {}", result);
