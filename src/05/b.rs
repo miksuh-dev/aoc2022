@@ -1,31 +1,63 @@
 use std::fs;
-use std::ops::Range;
 
-fn values_to_range(value: &str) -> Range<usize> {
-    let (start, end) = value.split_once('-').unwrap();
+#[derive(Debug)]
+struct Move(i32, i32, i32);
 
-    Range {
-        start: start.parse::<usize>().unwrap(),
-        end: end.parse::<usize>().unwrap(),
-    }
-}
+fn parse_step(line: &str) -> Move {
+    let trimmed = line.replace("move ", "");
 
-fn partially_contains(a: &Range<usize>, b: &Range<usize>) -> bool {
-    a.start <= b.start && a.end >= b.start || b.start <= a.start && b.end >= a.start
+    let (count, rest) = trimmed.split_once(" from ").unwrap();
+
+    let (from, to) = rest.split_once(" to ").unwrap();
+
+    Move(
+        from.parse::<i32>().unwrap() - 1,
+        to.parse::<i32>().unwrap() - 1,
+        count.parse::<i32>().unwrap(),
+    )
 }
 
 pub fn main() {
-    let input = fs::read_to_string("src/04/input.txt").expect("File not found");
+    let input = fs::read_to_string("src/05/input.txt").expect("File not found");
 
-    let result = input
-        .lines()
-        .map(|line| {
-            line.split_once(',')
-                .map(|(a, b)| (values_to_range(a), values_to_range(b)))
-                .unwrap()
-        })
-        .filter(|(a, b)| partially_contains(a, b))
-        .count();
+    let (top, bottom) = input.split_once("\n\n").unwrap();
 
-    println!("Result b: {}", result);
+    let steps = bottom.lines().map(parse_step).collect::<Vec<_>>();
+
+    let mut output = Vec::<Vec<char>>::with_capacity(20);
+
+    top.lines().rev().skip(1).for_each(|line| {
+        for (i, x) in line.chars().collect::<Vec<char>>().chunks(4).enumerate() {
+            if i >= output.len() {
+                let mut temp: Vec<char> = Vec::with_capacity(20);
+                temp.push(*x.iter().find(|&x| x.is_alphabetic() || *x == ' ').unwrap());
+
+                output.push(temp);
+            } else {
+                output[i].push(*x.iter().find(|&x| *x == ' ' || x.is_alphabetic()).unwrap());
+            }
+        }
+    });
+
+    output = output
+        .iter()
+        .map(|x| x.iter().cloned().collect::<Vec<char>>())
+        .collect::<Vec<_>>();
+
+    steps.iter().for_each(|step| {
+        let mut temp = Vec::with_capacity(20);
+
+        for _ in 0..step.2 {
+            let index = output[step.0 as usize]
+                .iter()
+                .rposition(|&x| x != ' ')
+                .unwrap();
+
+            temp.push(output[step.0 as usize].swap_remove(index));
+        }
+
+        output[step.1 as usize].append(&mut temp.iter().rev().cloned().collect::<Vec<char>>());
+    });
+
+    println!("{:?}", output);
 }
