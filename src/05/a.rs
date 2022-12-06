@@ -39,11 +39,6 @@ pub fn main() {
         }
     });
 
-    output = output
-        .iter()
-        .map(|x| x.iter().cloned().collect::<Vec<char>>())
-        .collect::<Vec<_>>();
-
     steps.iter().for_each(|step| {
         for _ in 0..step.2 {
             let index = output[step.0 as usize]
@@ -57,5 +52,10 @@ pub fn main() {
         }
     });
 
-    println!("{:?}", output);
+    let result = output
+        .iter()
+        .map(|x| x.iter().last().unwrap())
+        .collect::<Vec<_>>();
+
+    println!("Result a: {:?}", result);
 }

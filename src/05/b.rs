@@ -39,11 +39,6 @@ pub fn main() {
         }
     });
 
-    output = output
-        .iter()
-        .map(|x| x.iter().cloned().collect::<Vec<char>>())
-        .collect::<Vec<_>>();
-
     steps.iter().for_each(|step| {
         let mut temp = Vec::with_capacity(20);
 
@@ -59,5 +54,10 @@ pub fn main() {
         output[step.1 as usize].append(&mut temp.iter().rev().cloned().collect::<Vec<char>>());
     });
 
-    println!("{:?}", output);
+    let result = output
+        .iter()
+        .map(|x| x.iter().last().unwrap())
+        .collect::<Vec<_>>();
+
+    println!("Result b: {:?}", result);
 }
