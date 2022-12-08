@@ -3,26 +3,46 @@ use std::fs;
 #[derive(Debug, Clone)]
 pub struct FolderOrFile {
     name: String,
-    size: u64,
+    size: i64,
     path: String,
     files: Vec<FolderOrFile>,
 }
 
-fn get_folder_sizes(folders: &Vec<FolderOrFile>, path: &str) -> Vec<u64> {
+fn get_used_space(folders: &Vec<FolderOrFile>, path: &str) -> i64 {
+    folders
+        .iter()
+        .filter(|f| f.path.starts_with(path))
+        .map(|f| {
+            let mut size = 0;
+
+            size += f.files.iter().map(|f| f.size).sum::<i64>();
+            size += f.size;
+
+            println!("{} {}", f.path, size);
+
+            size
+        })
+        .sum()
+}
+
+fn get_folder_sizes(folders: &Vec<FolderOrFile>, path: &str) -> Vec<i64> {
     folders
         .iter()
         .filter(|f| f.path != path && f.path.starts_with(path))
         .map(|f| {
             let mut size = 0;
 
-            let subfolders = get_folder_sizes(&folders, &f.path);
-            size += subfolders.iter().map(|s| s).sum::<u64>();
-            size += f.files.iter().map(|f| f.size).sum::<u64>();
+            // let subfolders = get_folder_sizes(&folders, &f.path);
+            // size += subfolders.iter().map(|s| s).sum::<i64>();
+
+            size += f.files.iter().map(|f| f.size).sum::<i64>();
             size += f.size;
+
+            println!("{} {}", f.path, size);
 
             size
         })
-        .collect::<Vec<u64>>()
+        .collect::<Vec<i64>>()
 }
 
 pub fn main() {
@@ -37,7 +57,7 @@ pub fn main() {
 
     let mut cwd = root.path.clone();
 
-    let result = input
+    let folders = input
         .lines()
         .fold(vec![root], |mut folders, command| -> Vec<FolderOrFile> {
             if command.starts_with("ls") || command == ("$ cd /") {
@@ -60,6 +80,8 @@ pub fn main() {
                 if cwd == "" {
                     cwd = "/".to_string();
                 }
+
+                println!("cd .. {}", cwd);
 
                 return folders;
             }
@@ -88,6 +110,8 @@ pub fn main() {
             if command.starts_with("$ cd ") {
                 let folder_name = command.split(" ").collect::<Vec<&str>>()[2];
 
+                println!("cd {}", folder_name);
+
                 let new_path = if cwd == "/" {
                     format!("/{}", folder_name.to_owned())
                 } else {
@@ -105,10 +129,12 @@ pub fn main() {
 
                 let file = FolderOrFile {
                     name: file_name.to_string(),
-                    size: size.parse::<u64>().unwrap(),
+                    size: size.parse::<i64>().unwrap(),
                     path: cwd.to_string(),
                     files: vec![],
                 };
+
+                println!("create file {:?}", file.name);
 
                 folders.iter_mut().for_each(|folder| {
                     if folder.path == cwd {
@@ -122,10 +148,22 @@ pub fn main() {
             return folders;
         });
 
-    let result = get_folder_sizes(&result, "/")
-        .iter()
-        .filter(|f| **f < 100000)
-        .sum::<u64>();
+    let mut folder_sizes = get_folder_sizes(&folders, "/");
+    folder_sizes.sort();
 
-    println!("result: {}", result);
+    let max: i64 = 70000000;
+
+    let used_space = get_used_space(&folders, "/");
+    let remaining = max.saturating_sub(used_space);
+
+    println!("used space: {}", used_space);
+    println!("remaining space: {}", remaining);
+
+    println!("folder sizes: {:?}", folder_sizes);
+    let result = folder_sizes
+        .iter()
+        .find(|f| remaining + *f > 30000000)
+        .unwrap();
+
+    println!("result: {:?}", result);
 }
