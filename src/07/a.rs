@@ -127,5 +127,5 @@ pub fn main() {
         .filter(|f| **f < 100000)
         .sum::<u64>();
 
-    println!("result: {}", result);
+    println!("Result a: {}", result);
 }
