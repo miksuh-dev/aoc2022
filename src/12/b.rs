@@ -3,7 +3,6 @@ use std::fs;
 
 #[derive(Debug, PartialEq, Clone, Copy, Hash, Eq)]
 enum PointType {
-    Start,
     End,
     Cell(i32),
 }
@@ -46,11 +45,13 @@ impl Board {
             let y = index / col;
 
             let t = match value {
-                'S' => PointType::Start,
                 'E' => PointType::End,
                 value => {
-                    let height = Point::get_char_height(&value).unwrap();
-                    PointType::Cell(height as i32)
+                    if value == &'S' {
+                        PointType::Cell(0)
+                    } else {
+                        PointType::Cell(Point::get_char_height(value).unwrap() as i32)
+                    }
                 }
             };
 
@@ -61,11 +62,11 @@ impl Board {
         Self { vec, row, col }
     }
 
-    fn get_start(&self) -> &Point {
+    fn get_starts(&self) -> Vec<&Point> {
         self.vec
             .iter()
-            .find(|p| p.t == PointType::Start)
-            .expect("Start not found")
+            .filter(|point| point.t == PointType::Cell(0))
+            .collect::<Vec<&Point>>()
     }
 
     fn get_end(&self) -> &Point {
@@ -108,13 +109,11 @@ impl Board {
 
                 let current_height = match point.t {
                     PointType::Cell(height) => height,
-                    PointType::Start => 0,
                     PointType::End => Point::get_char_height(&'z').unwrap() as i32,
                 };
 
                 let next_height = match p.t {
                     PointType::Cell(height) => height,
-                    PointType::Start => 0,
                     PointType::End => Point::get_char_height(&'z').unwrap() as i32,
                 };
 
@@ -144,16 +143,27 @@ pub fn main() {
 
     let board = Board::new(cells, rows, cols);
 
-    let start = board.get_start();
     let end = board.get_end();
 
-    let result = dijkstra(
-        &start.position,
-        |position| board.get_allowed_moves(position),
-        |position| position.0 == end.position.0 && position.1 == end.position.1,
-    )
-    .unwrap()
-    .1;
+    // :D
+    let result = board
+        .get_starts()
+        .iter()
+        .filter_map(|p| {
+            let path = dijkstra(
+                &p.position,
+                |position| board.get_allowed_moves(position),
+                |position| position.0 == end.position.0 && position.1 == end.position.1,
+            );
 
-    println!("Result a: {:?}", result);
+            if path.is_some() {
+                return Some(path.unwrap().1);
+            }
+
+            None
+        })
+        .min()
+        .unwrap();
+
+    println!("Result b: {:?}", result);
 }
